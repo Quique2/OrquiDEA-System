@@ -36,14 +36,19 @@ Local: `latexmk -pdf main.tex` (TeX Live / MiKTeX).
   - `hmi_operador.svg` — panel HMI del operador (misma conversión si se
     quiere incluir).
 
-## Capturas pendientes (opcionales, ya hay huecos comentados en main.tex)
+## Capturas de la app (LISTAS — tomadas el 2026-08-18 del deploy en Railway
+con Playwright + Chrome headless, sesión sembrada, sin credenciales visibles)
 
-1. `captura_visor3d.png` — pestaña "Cobot en Vivo" del gemelo
-   (`npm start` en `SchneiderProjectWeb_DigitalTwin/`).
-2. `captura_scada.png` — panel SCADA 4.0 con los 5 pilares.
+1. `captura_visor3d.png` — pestaña "Celda 3D" con la FSM corriendo
+   (RUNNING, 2 CAFIs en fixtures, remachado activo). [Simulación local.]
+2. `captura_scadasim.png` — SCADA SIM alimentado por BroadcastChannel,
+   corrida activa con 3 piezas en proceso. [Simulación local.]
+3. `captura_scada_offline.png` — SCADA real con el gateway fuera de línea:
+   ilustra la política real-only (todo N/D en vez de valores inventados).
 
-Descomentar los bloques `\begin{figure}` correspondientes en la sección de
-Resultados de `main.tex` tras colocar los PNG en `figuras/`.
+Las tres ya están referenciadas en `main.tex` con leyendas que declaran su
+fidelidad. Si algún día se captura la vista "Cobot en Vivo" con el gateway
+encendido (telemetría real), puede añadirse como figura adicional.
 
 ## Reglas editoriales aplicadas (mantener al editar)
 

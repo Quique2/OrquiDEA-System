@@ -628,6 +628,19 @@ incluida.
 Siguiendo la práctica recomendada para gemelos digitales, todo dato del
 sistema (y de este artículo) pertenece a una de las clases de la
 Tabla~\ref{tab:fidelidad}; la interfaz las señala con insignias visibles.
+La Fig.~\ref{fig:scadaoffline} ilustra la política \emph{real-only} en su
+caso extremo: con el \emph{gateway} fuera de línea, el SCADA muestra cada
+indicador como no disponible en lugar de rellenarlo con valores sintéticos.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{captura_scada_offline}
+  \caption{Panel SCADA en modo real con el \emph{gateway} fuera de línea:
+  la política \emph{real-only} muestra cada señal sin fuente como
+  N/D en lugar de simularla, y los canales de comunicación reportan su
+  estado. [Telemetría real ausente, honestamente señalada.]}
+  \label{fig:scadaoffline}
+\end{figure}
 
 \begin{table}[t]
   \caption{Clases de fidelidad de los datos del sistema.}
@@ -673,20 +686,27 @@ de datos), y los indicadores de ocupación del cobot solo son alimentados por
 el simulador. Asimismo, el remachado es un ciclo temporizado de
 \SI{30}{\second} sin actuador comandado, conforme al alcance del reto.
 
-% Figuras recomendadas para esta sección (capturar y descomentar):
-% \begin{figure}[t]
-%   \centering
-%   \includegraphics[width=\columnwidth]{captura_visor3d.png}
-%   \caption{Vista ``Cobot en vivo'' del gemelo digital animada con
-%   telemetría Modbus real a 10 Hz. [Telemetría real.]}
-%   \label{fig:visor}
-% \end{figure}
-% \begin{figure}[t]
-%   \centering
-%   \includegraphics[width=\columnwidth]{captura_scada.png}
-%   \caption{Panel SCADA 4.0 con los cinco pilares de analítica.}
-%   \label{fig:scada}
-% \end{figure}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{captura_visor3d}
+  \caption{Vista ``Celda 3D'' del gemelo digital: modelo URDF de la celda
+  completa gobernado por la máquina de estados local. A la derecha, el HMI
+  de operador con la celda en RUNNING, piezas en ambos \emph{fixtures},
+  el temporizador de remachado activo (\SI{30}{\second}) y los
+  enclavamientos visibles (\emph{spawn} bloqueado, cobot en zona).
+  [Simulación local.]}
+  \label{fig:visor}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{captura_scadasim}
+  \caption{SCADA de simulación local, alimentado por la máquina de estados
+  de la celda 3D mediante \emph{BroadcastChannel} (sin red): corrida activa
+  con tres piezas en proceso, semáforo virtual y trazabilidad de la pieza
+  activa con su veredicto. [Simulación local.]}
+  \label{fig:scadasim}
+\end{figure}
 
 % =========================================================================
 \section{Discusión}
