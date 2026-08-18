@@ -1,10 +1,23 @@
-# Investigación — paper IEEE (documento completo)
+# Investigación — paper IEEE "Sistema OrquiDEA" (documento completo)
 
-Documento de investigación del gemelo digital Schneider, **redactado y
-verificado contra el código** el 2026-08-18 (auditoría con lectores por
-subsistema: gateway RPi, frontend web, SCADA+IA y arquitecturas). La
-bibliografía fue verificada entrada por entrada contra Crossref, IEEE,
-Springer, modbus.org, IEC e ISO — ya no quedan marcas `VERIFICAR`.
+Documento de investigación del gemelo digital Schneider (Sistema OrquiDEA),
+**redactado y verificado contra el código** el 2026-08-18 (auditoría con
+lectores por subsistema: gateway RPi, frontend web, SCADA+IA y
+arquitecturas) y **enriquecido con los datos medidos del informe técnico
+final** (corrida real: 181.9 s promedio / 80.8 % idle; simulación
+optimizada: 138.8 s / 22.0 %). La bibliografía fue verificada entrada por
+entrada contra Crossref, IEEE, Springer, modbus.org, IEC e ISO.
+
+## Versiones e idiomas
+
+- `main.tex` + `referencias.bib` — versión en **español** (repo
+  `OrquiDEA-System`, proyecto Overleaf original).
+- `english/main.tex` + `english/referencias.bib` — versión en **inglés**
+  (repo `OrquiDEA-System-Copy-`, proyecto Overleaf copia).
+- Autores: E. A. González Hernández (A01178473), S. Ordóñez Ramírez
+  (A01769810), D. Becerra Fuentes (A00838679) y el profesor asesor
+  Alexandro Ortiz. R. Díaz Arrigunaga se acredita en los agradecimientos y
+  como coautor del informe técnico citado.
 
 ## Compilar en Overleaf (recomendado)
 

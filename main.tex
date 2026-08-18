@@ -1,20 +1,27 @@
 % =========================================================================
 % Gemelo digital con SCADA 4.0 e IA para una celda de remachado e
 % inspección de interruptores CAFI — Schneider Electric Challenge 3.0
-% Formato IEEE Conference (IEEEtran). Compilar con pdfLaTeX + BibTeX
-% (en Overleaf: subir la carpeta completa, compilador pdfLaTeX).
+% Formato Springer SVProc (plantilla del curso, en styles/svproc.cls).
+% Compilar con pdfLaTeX + BibTeX (en Overleaf: compilador pdfLaTeX).
 %
 % Todos los datos técnicos de este documento fueron verificados contra el
 % código de los repos RaspberryPiGIT y SchneiderProjectWeb_DigitalTwin
 % (auditoría del 2026-08-18). La fidelidad de cada dato se etiqueta
 % conforme a la Tabla de fidelidad (Sección de Resultados).
 % =========================================================================
-\documentclass[conference]{IEEEtran}
-\IEEEoverridecommandlockouts
+\documentclass{styles/svproc}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[spanish,es-tabla,es-noshorthands]{babel}
+% svproc solo localiza inglés/francés/alemán: completar el español
+\addto\captionsspanish{%
+  \def\abstractname{Resumen.}%
+  \def\keywordname{\textbf{Palabras clave:}}%
+  \def\andname{y}%
+  \def\lastandname{\unskip{} y}%
+  \def\figurename{Fig.}%
+}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath}
@@ -22,50 +29,62 @@
 % siunitx v3 (Overleaf actual) eliminó \bar y hace opcional \byte:
 \DeclareSIUnit\bar{bar}
 \DeclareSIUnit\byte{B}
-\usepackage{listings}
 \usepackage{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}
-\usepackage{cite}
-\usepackage{hyperref}
+% URLs, URIs y DOIs (formato de la plantilla SVProc)
+\usepackage{url}
+\def\UrlFont{\rmfamily}
 
 \graphicspath{{figuras/}}
 
-\lstset{basicstyle=\ttfamily\scriptsize, breaklines=true, frame=single,
-        numbers=left, numberstyle=\tiny\color{gray}, captionpos=b}
-
 \begin{document}
 
-\title{Gemelo digital con SCADA 4.0 e inteligencia artificial para una celda
-semi-automatizada de remachado e inspección de interruptores CAFI\\
-{\footnotesize Schneider Electric Challenge 3.0 --- ITESM, Equipo 3}}
+\mainmatter  % inicio de la contribución
 
+% ----------------- TÍTULO -----------------
+\title{Sistema OrquiDEA: gemelo digital con SCADA 4.0 e inteligencia
+artificial para una celda ciberfísica de remachado e inspección de
+interruptores CAFI}
+
+\titlerunning{Sistema OrquiDEA}
+
+% ----------------- AUTORES -----------------
 \author{
-\IEEEauthorblockN{Enrique Amir González H.}
-\IEEEauthorblockA{ITESM Campus Monterrey\\kiki7o@outlook.es}
-\and
-\IEEEauthorblockN{Diego Becerra Fuentes}
-\IEEEauthorblockA{ITESM Campus Monterrey}
-\and
-\IEEEauthorblockN{Rodrigo Díaz Arrigunaga}
-\IEEEauthorblockA{ITESM Campus Monterrey}
-\and
-\IEEEauthorblockN{Santiago Ordóñez Ramírez}
-\IEEEauthorblockA{ITESM Campus Monterrey}
+Enrique Amir González Hernández \and
+Santiago Ordóñez Ramírez \and
+Diego Becerra Fuentes \and
+Alexandro Ortiz-Espinoza
+}
+
+\authorrunning{González Hernández et al.}
+
+\tocauthor{
+Enrique Amir González Hernández,
+Santiago Ordóñez Ramírez,
+Diego Becerra Fuentes,
+Alexandro Ortiz-Espinoza
+}
+
+% ----------------- INSTITUCIÓN -----------------
+\institute{
+Tecnológico de Monterrey, Ave.\ Eugenio Garza Sada 2501 Sur,
+Monterrey 64849, N.L., México\\
+\email{\{a01178473, a01769810, a00838679, alexandro.ortiz\}@tec.mx}
 }
 
 \maketitle
 
 \begin{abstract}
-Se presenta el diseño y la implementación de un gemelo digital con SCADA 4.0
+Se presenta OrquiDEA, un sistema ciberfísico con gemelo digital, SCADA 4.0
 e inteligencia artificial para una celda semi-automatizada de remachado e
 inspección de interruptores miniatura con protección combinada de falla de
-arco (CAFI), desarrollada para el Schneider Electric Challenge 3.0. Una
+arco (CAFI), desarrollado para el Schneider Electric Challenge 3.0. Una
 Raspberry Pi 4 actúa como \emph{gateway} IIoT y orquestador de facto de la
 celda: adquiere la telemetría del cobot Lexium por Modbus TCP a 10 Hz (121
 registros por muestreo), lo comanda mediante un protocolo TLS/JSON, integra
-una cámara industrial Datalogic P15 por HTTP, opera el HMI físico como
-maestro Modbus y acciona la mesa indexadora mediante GPIO, exponiendo el
+una cámara industrial Datalogic P15, opera el HMI físico como maestro
+Modbus y acciona la mesa rotatoria indexadora mediante GPIO, exponiendo el
 conjunto a través de un backend FastAPI con un WebSocket de telemetría y 35
 puntos de acceso REST. El gemelo digital, accesible desde el navegador
 (React Native Web, three.js y urdf-loader), replica la celda con modelos
@@ -73,18 +92,18 @@ URDF y anima el cobot con telemetría real; sobre él, una capa SCADA 4.0
 aporta analítica en cinco pilares ---detección de anomalías por z-score y
 seguridad, mantenimiento predictivo, optimización de proceso y soporte de
 decisiones SOP--- junto con un copiloto de mantenimiento basado en un
-modelo de lenguaje. Se documenta
-el contraste entre la arquitectura PLC-céntrica propuesta y la
+modelo de lenguaje. En una corrida real de cuatro piezas la celda registró
+un tiempo de ciclo promedio de \SI{181.9}{\second} con 80.8\,\% de
+inactividad del cobot; la re-secuenciación diseñada y validada en el gemelo
+digital lo reduce a \SI{138.8}{\second} y 22.0\,\% en simulación. Se
+documenta el contraste entre la arquitectura PLC-céntrica propuesta y la
 implementación gateway-céntrica resultante, se etiqueta explícitamente la
-fidelidad de cada dato (telemetría real, derivado, simulación o
-demostración) y se discuten las lecciones de integrar equipo industrial
-heterogéneo con hardware de bajo costo.
+fidelidad de cada dato (medición real, derivado, simulación o demostración)
+y se discuten las lecciones de integrar equipo industrial heterogéneo con
+hardware de bajo costo.
+\keywords{gemelo digital, SCADA, Industria 4.0, cobot, Modbus TCP, IIoT,
+visión artificial, Raspberry Pi}
 \end{abstract}
-
-\begin{IEEEkeywords}
-gemelo digital, SCADA, Industria 4.0, cobot, Modbus TCP, IIoT, visión
-artificial, Raspberry Pi
-\end{IEEEkeywords}
 
 % =========================================================================
 \section{Introducción}
@@ -110,8 +129,9 @@ referencia es el interruptor Square~D Homeline HOM120PCAFI
 replicado para el prototipo mediante impresión 3D con cinco marcadores que
 simulan los remaches.
 
-Este artículo documenta el sistema construido y, en particular, su gemelo
-digital. Las contribuciones son:
+Este artículo documenta el sistema construido ---bautizado
+\emph{OrquiDEA}--- y, en particular, su gemelo digital. Las contribuciones
+son:
 \begin{enumerate}
   \item Un \emph{gateway} IIoT de bajo costo (Raspberry Pi 4) que integra
         cinco protocolos heterogéneos (Modbus TCP, TLS/JSON, HTTP, FTP y
@@ -175,11 +195,19 @@ fuera del alcance la remachadora industrial operativa ---el remachado se
 representa mediante un ciclo simulado de \SI{30}{\second}---, el despliegue a
 gran escala y la certificación comercial.
 
-El efector final es un gripper de tres dedos con mecanismo de pantógrafo
-accionado por un cilindro neumático de doble efecto MAL16$\times$25 (émbolo
-de \SI{16}{\milli\metre}, carrera de \SI{25}{\milli\metre}, presión máxima
-de \SI{6}{\bar}): la extensión abre los dedos y la retracción los cierra. El
-criterio de calidad es binario: una pieza con los cinco remaches detectados
+El efector final propuesto originalmente era un gripper de tres dedos con
+mecanismo de pantógrafo accionado por un cilindro neumático de doble efecto
+MAL16$\times$25 (émbolo de \SI{16}{\milli\metre}, carrera de
+\SI{25}{\milli\metre}, presión máxima de \SI{6}{\bar}); el diseño construido
+evolucionó a una configuración más simple y robusta: una base con el pistón
+de doble efecto, un dedo fijo y un dedo móvil en el extremo del émbolo,
+ambos recubiertos con una membrana delgada y flexible que aporta agarre y
+fricción. El gripper se aproxima con el dedo fijo casi en contacto con la
+pieza, de modo que el cierre no la desplace dentro del \emph{fixture}. De
+los \emph{fixtures}, el de inspección se maquinó en madera por CNC y el
+resto se fabricó por manufactura aditiva; la alimentación combina una rampa
+mecánica de suministro con una banda transportadora. El criterio de calidad
+es binario: una pieza con los cinco remaches detectados
 PASA; con menos de cinco, NO PASA, y el resultado se refleja en el HMI. La
 validación del reto contempló ambas pruebas (pieza correcta y pieza
 defectuosa). El diseño de seguridad se apoyó en ANSI/RIA R15.06,
@@ -215,17 +243,20 @@ backend FastAPI \cite{fastapi} que habla directamente con cada dispositivo:
 Modbus TCP con el cobot (lectura) y con el HMI (como maestro), TLS/JSON con
 el controlador del cobot (comandos), HTTP con la cámara, FTP para programas
 del robot y GPIO para la mesa indexadora, la banda y los sensores de los
-\emph{fixtures} (Tabla~\ref{tab:protocolos}). El PLC Modicon TM262-15
-(192.168.1.50) y el servidor OPC UA de EcoStruxure (192.168.1.201:4840)
-quedaron documentados en la arquitectura implementada como ``integración
-futura'', sin participación activa en el ciclo.
+\emph{fixtures} (Tabla~\ref{tab:protocolos}). Al PLC Modicon TM262-15
+(192.168.1.50), programado en EcoStruxure Machine Expert \cite{iec61131}, se
+le asignó un papel de apoyo como capa de acondicionamiento de señales de
+E/S dentro de la arquitectura general; el ciclo de producción completo, sin
+embargo, corre en el \emph{gateway} sin depender del PLC, y el servidor OPC
+UA de EcoStruxure (192.168.1.201:4840) quedó documentado como integración
+futura.
 
 \begin{figure}[t]
   \centering
   \begin{tikzpicture}[
     font=\scriptsize,
     capa/.style={draw, rounded corners=2pt, align=center,
-                 text width=0.86\columnwidth, inner sep=5pt},
+                 text width=0.82\textwidth, inner sep=5pt},
     enlace/.style={{Stealth[length=2mm]}-{Stealth[length=2mm]}, thick},
     node distance=5.5mm
   ]
@@ -275,7 +306,7 @@ futura'', sin participación activa en el ciclo.
   \end{tabular}
 \end{table}
 
-\begin{table*}[t]
+\begin{table}[t]
   \caption{Contraste entre la arquitectura propuesta y la implementada.}
   \label{tab:comparativa}
   \centering
@@ -285,7 +316,7 @@ futura'', sin participación activa en el ciclo.
     Función & Propuesta (PLC-céntrica) & Implementada (gateway-céntrica) \\
     \midrule
     Orquestador & PLC Modicon M262 vía EtherNet/IP & Raspberry Pi 4 con FastAPI; máquina de estados de 32 pasos en Python \\
-    PLC & Cerebro central del sistema & TM262-15 presente en red (192.168.1.50) pero sin integración activa; ``integración futura'' \\
+    PLC & Cerebro central del sistema & TM262-15 con papel de apoyo (acondicionamiento de E/S); el ciclo de producción no depende de él \\
     Interoperabilidad & EtherNet/IP troncal & Modbus TCP, TLS/JSON, HTTP, FTP y GPIO hablados directamente por el gateway; OPC UA diferido \\
     Cobot & ``Lexium Cobot'' comandado por el PLC & Lexium LXMRL03S0000 (6 GDL, \SI{3}{\kilo\gram}, alcance \SI{626}{\milli\metre}) con 4 canales simultáneos hacia la RPi \\
     HMI & Par del PLC vía EtherNet/IP & Esclavo Modbus TCP de la RPi: 15 LEDs (bobinas 1--15), 6 botones (101--106), 4 registros \\
@@ -296,7 +327,7 @@ futura'', sin participación activa en el ciclo.
     Redes & Una red implícita & Dos subredes con NAT en la RPi; túnel TLS de dominio estático para el acceso público \\
     \bottomrule
   \end{tabular}
-\end{table*}
+\end{table}
 
 % =========================================================================
 \section{El gateway IIoT}
@@ -360,10 +391,9 @@ El ciclo de producción de una pieza es una secuencia determinista de 32
 pasos (Fig.~\ref{fig:ciclo}): tras el pre-vuelo (energizado y habilitación)
 y el \emph{homing} de la mesa, la banda avanza hasta que el sensor
 fotoeléctrico detecta un CAFI; el cobot lo toma, lo coloca en el
-\emph{fixture} de remachado, la mesa indexa hacia la posición de remachado
-(una rotación de \SI{180}{\degree} en el modelo cinemático de la celda) y
-permanece \SI{30}{\second} (ciclo de remachado simulado, sin actuador
-comandado), regresa, y el cobot lleva la pieza a la placa de visión; tras
+\emph{fixture} de remachado, la mesa indexa \SI{180}{\degree} hacia la
+posición de remachado y permanece \SI{30}{\second} (ciclo de remachado
+simulado, sin actuador comandado), regresa, y el cobot lleva la pieza a la placa de visión; tras
 una espera de inspección de hasta \SI{5}{\second}, el veredicto PASS/FAIL
 determina el contenedor destino y el brazo regresa a HOME. La biblioteca de
 poses contiene 25 posturas articulares definidas en grados de controlador
@@ -388,9 +418,9 @@ puente de cinemática inversa descrito.
   \begin{tikzpicture}[
     font=\scriptsize,
     paso/.style={draw, rounded corners=2pt, align=center,
-                 text width=0.62\columnwidth, inner sep=3pt},
+                 text width=0.55\textwidth, inner sep=3pt},
     fin/.style={draw, rounded corners=2pt, align=center,
-                text width=0.27\columnwidth, inner sep=3pt},
+                text width=0.24\textwidth, inner sep=3pt},
     flecha/.style={-{Stealth[length=2mm]}, thick},
     node distance=3.2mm
   ]
@@ -401,8 +431,8 @@ puente de cinemática inversa descrito.
     \node[paso, fill=gray!8, below=of p4] (p5) {5. Retiro de pieza remachada (14--16)};
     \node[paso, below=of p5]  (p6) {6. Colocación en placa de visión; inspección $\leq$ \SI{5}{\second} (17--23)};
     \node[paso, fill=gray!8, below=of p6] (p7) {7. Retiro de placa y tránsito a contenedores (24--27)};
-    \node[fin, below=5mm of p7, xshift=-0.16\columnwidth, fill=green!8]  (ok) {PASS $\rightarrow$ contenedor de aceptadas};
-    \node[fin, below=5mm of p7, xshift=0.16\columnwidth, fill=red!8] (ko) {FAIL $\rightarrow$ contenedor de rechazadas};
+    \node[fin, below=5mm of p7, xshift=-0.15\textwidth, fill=green!8]  (ok) {PASS $\rightarrow$ contenedor de aceptadas};
+    \node[fin, below=5mm of p7, xshift=0.15\textwidth, fill=red!8] (ko) {FAIL $\rightarrow$ contenedor de rechazadas};
     \node[paso, below=18mm of p7] (p9) {8. Retorno seguro a HOME (31--32)};
     \draw[flecha] (p1) -- (p2);
     \draw[flecha] (p2) -- (p3);
@@ -433,11 +463,14 @@ de planta conserva un punto de mando físico aunque el orquestador sea el
 \emph{gateway}.
 
 \subsection{Actuación local por GPIO}
-La mesa indexadora se desplaza entre dos finales de carrera accionada por
-un motor a pasos (STEP en GPIO17, DIR en GPIO27, límites en GPIO22/23); no
-hay codificador, por lo que la posición se conoce únicamente por los
-límites (el modelo cinemático de la celda representa este recorrido como
-una rotación de \SI{180}{\degree}). El perfil de velocidad es trapezoidal (aceleración de 166 a
+La mesa indexadora es un disco de MDF con dos \emph{fixtures} en extremos
+opuestos, soportado por rodillos y accionado por banda desde un motor a
+pasos NEMA~17 a través de una PCB propia con controlador A4988 y fuente
+externa de \SI{12}{\volt}; la RPi genera las señales de paso y dirección
+(STEP en GPIO17, DIR en GPIO27). No hay codificador: una aleta del disco
+acciona dos finales de carrera (GPIO22/23) en los extremos de la rotación
+de \SI{180}{\degree}, de modo que la posición se conoce únicamente por los
+límites. El perfil de velocidad es trapezoidal (aceleración de 166 a
 417 pasos/s en 250 pasos y arrastre final a 143 pasos/s hasta asentar el
 final de carrera), con recorridos medidos de 497 a 821 pasos y un tiempo de
 indexado de 3.2 a \SI{4.0}{\second} en banco. El generador de pasos corre en
@@ -521,7 +554,7 @@ como FAIL, favoreciendo los falsos rechazos sobre los falsos aceptados.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.72\columnwidth]{camara_cafi_template}
+  \includegraphics[width=0.6\textwidth]{camara_cafi_template}
   \caption{Plantilla de referencia de la inspección: captura real de la
   cámara Datalogic P15 ($1280\times1024$, monocromática) del CAFI en el
   \emph{fixture} de visión; se aprecian los orificios de los cinco puntos
@@ -634,7 +667,7 @@ indicador como no disponible en lugar de rellenarlo con valores sintéticos.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{captura_scada_offline}
+  \includegraphics[width=\textwidth]{captura_scada_offline}
   \caption{Panel SCADA en modo real con el \emph{gateway} fuera de línea:
   la política \emph{real-only} muestra cada señal sin fuente como
   N/D en lugar de simularla, y los canales de comunicación reportan su
@@ -647,7 +680,7 @@ indicador como no disponible en lugar de rellenarlo con valores sintéticos.
   \label{tab:fidelidad}
   \centering
   \scriptsize
-  \begin{tabular}{@{}lp{0.62\columnwidth}@{}}
+  \begin{tabular}{@{}lp{0.72\textwidth}@{}}
     \toprule
     Clase & Descripción y ejemplos \\
     \midrule
@@ -677,18 +710,57 @@ satisface el criterio del reto: pieza con 5 remaches $\to$ PASA; con menos
 $\to$ NO PASA. \emph{En simulación}: la máquina de estados cuenta con 17
 pruebas unitarias que cubren su comportamiento completo, y el planificador
 concurrente fue validado en corridas en seco de 1, 2, 3, 5 y 10 piezas con
-cero violaciones de enclavamiento.
+cero violaciones de enclavamiento. La Fig.~\ref{fig:visor} muestra la vista
+de celda 3D gobernada por la máquina de estados durante una corrida, y la
+Fig.~\ref{fig:scadasim}, el SCADA de simulación alimentado por ella.
 
-Dos limitaciones de medición deben declararse: el repositorio no registra
-tiempos de ciclo de producción medidos en corridas físicas completas (las
-métricas de tiempo de ciclo existen como instrumentación, no como conjunto
-de datos), y los indicadores de ocupación del cobot solo son alimentados por
-el simulador. Asimismo, el remachado es un ciclo temporizado de
-\SI{30}{\second} sin actuador comandado, conforme al alcance del reto.
+\subsection{Corrida real y optimización del ciclo}
+La evaluación sobre el hardware, documentada en el informe técnico final
+del equipo \cite{informe2026}, procesó cuatro piezas de extremo a extremo y
+midió un tiempo de ciclo promedio de \SI{181.9}{\second} por CAFI con una
+inactividad del cobot de 80.8\,\%: el cuello de botella no era la velocidad
+del brazo sino la coordinación ---esperas por estaciones y retornos
+innecesarios a posturas seguras lejanas---, y los ciclos más largos
+coincidieron con más piezas simultáneas en proceso
+(Tabla~\ref{tab:ciclos}). Sobre ese diagnóstico se rediseñó la secuencia
+usando el gemelo digital como banco de pruebas: se eliminaron los retornos
+automáticos a posturas seguras generales, se introdujo una pose corta de
+despeje de la zona de la mesa, se añadieron las poses altas de aproximación
+de la biblioteca del \emph{gateway} y se reordenaron las prioridades del
+planificador para entregar primero las piezas ya inspeccionadas. Con
+tiempos físicos medidos como parámetros (inspección \SI{5}{\second},
+remachado \SI{30}{\second}), la secuencia optimizada redujo en simulación
+el ciclo promedio a \SI{138.8}{\second} ($-$\SI{43.1}{\second}) y la
+inactividad a 22.0\,\% ($-58.8$ puntos porcentuales). Estas cifras
+optimizadas provienen de simulación validada, no de mediciones físicas, y
+el remachado sigue siendo un ciclo temporizado de \SI{30}{\second} sin
+actuador comandado, conforme al alcance del reto. Las corridas en video
+(planta física y SCADA 4.0) están disponibles como evidencia complementaria
+\cite{videoplanta,videoscada}.
+
+\begin{table}[t]
+  \caption{Tiempo de ciclo por pieza: corrida real vs.\ secuencia
+  optimizada (validada en simulación) \cite{informe2026}.}
+  \label{tab:ciclos}
+  \centering
+  \scriptsize
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Métrica & Corrida real & Sim.\ optimizada & Mejora \\
+    \midrule
+    Ciclo CAFI 1 & \SI{120.0}{\second} & \SI{104.4}{\second} & \SI{15.6}{\second} \\
+    Ciclo CAFI 2 & \SI{210.5}{\second} & \SI{147.2}{\second} & \SI{63.3}{\second} \\
+    Ciclo CAFI 3 & \SI{204.0}{\second} & \SI{160.2}{\second} & \SI{43.8}{\second} \\
+    Ciclo CAFI 4 & \SI{147.2}{\second} & \SI{143.3}{\second} & \SI{3.9}{\second} \\
+    Promedio & \SI{181.9}{\second} & \SI{138.8}{\second} & \SI{43.1}{\second} \\
+    Inactividad del cobot & 80.8\,\% & 22.0\,\% & $-58.8$ pp \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{captura_visor3d}
+  \includegraphics[width=\textwidth]{captura_visor3d}
   \caption{Vista ``Celda 3D'' del gemelo digital: modelo URDF de la celda
   completa gobernado por la máquina de estados local. A la derecha, el HMI
   de operador con la celda en RUNNING, piezas en ambos \emph{fixtures},
@@ -700,7 +772,7 @@ el simulador. Asimismo, el remachado es un ciclo temporizado de
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{captura_scadasim}
+  \includegraphics[width=\textwidth]{captura_scadasim}
   \caption{SCADA de simulación local, alimentado por la máquina de estados
   de la celda 3D mediante \emph{BroadcastChannel} (sin red): corrida activa
   con tres piezas en proceso, semáforo virtual y trazabilidad de la pieza
@@ -736,7 +808,7 @@ validación de la concurrencia multi-pieza es, hasta ahora, en seco. Nada de
 esto invalida la tesis central, pero acota su alcance a entornos educativos
 y de prototipado.
 
-La lección generalizable es doble. Primero, un gemelo digital útil no
+La lección generalizable es triple. Primero, un gemelo digital útil no
 requiere la pila de integración canónica: con un \emph{gateway} de bajo
 costo que normalice protocolos heterogéneos a JSON sobre WebSocket, la capa
 de visualización y analítica se vuelve tecnología web estándar. Segundo, la
@@ -744,17 +816,24 @@ disciplina de etiquetar la fidelidad de cada dato (real, derivado, simulado,
 demo) ---adoptada aquí desde el diseño--- es lo que permite que un sistema
 con partes simuladas siga siendo honesto como herramienta de ingeniería, en
 línea con la distinción modelo/sombra/gemelo de
-\cite{kritzinger2018digital}.
+\cite{kritzinger2018digital}. Tercero, el gemelo demostró un retorno
+concreto como banco de optimización: el rediseño de la secuencia, probado
+primero en simulación, redujo el ciclo promedio en 23.7\,\% y la
+inactividad del cobot en 58.8 puntos porcentuales sin arriesgar el
+hardware durante la exploración.
 
 % =========================================================================
 \section{Conclusiones y trabajo futuro}
-Se construyó y documentó una celda semi-automatizada de remachado e
-inspección de interruptores CAFI con un gemelo digital web completo: un
+Se construyó y documentó OrquiDEA: una celda semi-automatizada de remachado
+e inspección de interruptores CAFI con un gemelo digital web completo, un
 \emph{gateway} IIoT que orquesta cinco protocolos y un ciclo de 32 pasos,
 telemetría real a 10 Hz animando un modelo URDF en el navegador, inspección
 por visión de los cinco remaches con margen de decisión calibrado, y una
 capa SCADA 4.0 con cinco pilares de analítica y copiloto de mantenimiento.
-El contraste documentado entre el diseño PLC-céntrico y la implementación
+En hardware, la celda procesó corridas completas con un ciclo promedio de
+\SI{181.9}{\second} por pieza, y el gemelo digital permitió diseñar una
+secuencia que lo reduce a \SI{138.8}{\second} en simulación validada. El
+contraste documentado entre el diseño PLC-céntrico y la implementación
 gateway-céntrica constituye, más que una desviación, un caso de estudio de
 integración pragmática en Industria 4.0.
 
@@ -764,18 +843,21 @@ la red, migrando hacia ellos las funciones de seguridad y control de bajo
 nivel; (2) cablear la cadena de paro de emergencia física al arranque del
 ciclo (la compuerta de software ya existe y está deliberadamente sin
 conectar); (3) endurecer el acceso (autenticación en el backend y en la
-aplicación); (4) medir y publicar los indicadores de producción reales
-(tiempos de ciclo físicos, OEE) que la instrumentación ya soporta; y (5)
+aplicación); (4) llevar la secuencia optimizada de vuelta a la planta para
+confirmar en corridas físicas la reducción de ciclo predicha, extendiendo
+la medición hacia indicadores sostenidos (OEE); y (5)
 sustituir gradualmente las heurísticas de los pilares por modelos entrenados
 con los históricos que el propio SCADA acumula.
 
 \section*{Agradecimientos}
 Los autores agradecen a Schneider Electric por el planteamiento del reto y
-el acceso al equipo Lexium, Modicon y Harmony, y al Tecnológico de Monterrey
+el acceso al equipo Lexium, Modicon y Harmony; al Tecnológico de Monterrey
 por la infraestructura del laboratorio y la asesoría durante el
-Schneider Electric Challenge 3.0.
+Schneider Electric Challenge 3.0; y a Rodrigo Díaz Arrigunaga por su
+colaboración en el desarrollo del proyecto y del informe técnico
+\cite{informe2026}.
 
-\bibliographystyle{IEEEtran}
+\bibliographystyle{splncs03}
 \bibliography{referencias}
 
 \end{document}
