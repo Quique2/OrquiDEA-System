@@ -92,7 +92,9 @@ URDF y anima el cobot con telemetría real; sobre él, una capa SCADA 4.0
 aporta analítica en cinco pilares ---detección de anomalías por z-score y
 seguridad, mantenimiento predictivo, optimización de proceso y soporte de
 decisiones SOP--- junto con un copiloto de mantenimiento basado en un
-modelo de lenguaje. En una corrida real de cuatro piezas la celda registró
+modelo de lenguaje; el conjunto es operable de forma remota desde
+cualquier dispositivo autorizado con un navegador, sin instalación de
+software. En una corrida real de cuatro piezas la celda registró
 un tiempo de ciclo promedio de \SI{181.9}{\second} con 80.8\,\% de
 inactividad del cobot; la re-secuenciación diseñada y validada en el gemelo
 digital lo reduce a \SI{138.8}{\second} y 22.0\,\% en simulación. Se
@@ -184,6 +186,15 @@ la celda se enmarca en las normas de robótica industrial ISO 10218-1/-2
 \cite{iso10218-1,iso10218-2} y en la especificación de robots colaborativos
 ISO/TS 15066 \cite{isots15066}, cuyo contenido fue incorporado a las
 ediciones 2025 de ISO 10218.
+
+Finalmente, la transición hacia la Industria 5.0 desplaza el énfasis de la
+automatización pura hacia sistemas centrados en el ser humano, resilientes
+y sostenibles \cite{xu2021industry,ec2021industry5}. En esa transición, los
+gemelos digitales basados en web ---accesibles desde cualquier navegador,
+sin instalación especializada--- se han propuesto como vía natural para el
+monitoreo y el control remotos de sistemas ciberfísicos de producción
+\cite{liu2020webbased}, línea en la que se inscribe directamente este
+trabajo.
 
 % =========================================================================
 \section{Contexto del reto y proceso objetivo}
@@ -453,14 +464,30 @@ puente de cinemática inversa descrito.
 \end{figure}
 
 \subsection{Integración del HMI físico}
-El HMI Schneider funciona como esclavo Modbus TCP (192.168.1.51:502) y la
-RPi como maestro con un lazo de \SI{200}{\milli\second}: escribe 15 LEDs en
-las bobinas 1--15 (incluido el semáforo rojo/ámbar/verde), tres contadores
-de producción (total, aceptadas, rechazadas) y un registro con el estado de
-la cámara, y lee seis botones en las bobinas 101--106 (START, STOP, RESUME,
-RESTART, CONFIRM\_CLEAN, FINALIZE) con detección de flanco. Así, el operador
-de planta conserva un punto de mando físico aunque el orquestador sea el
-\emph{gateway}.
+\label{sec:hmi}
+El HMI Schneider (Harmony HMIST6400) funciona como esclavo Modbus TCP
+(192.168.1.51:502) y la RPi como maestro con un lazo de
+\SI{200}{\milli\second}: escribe 15 LEDs en las bobinas 1--15 (incluido el
+semáforo rojo/ámbar/verde), tres contadores de producción (total,
+aceptadas, rechazadas) y un registro con el estado de la cámara, y lee
+seis botones en las bobinas 101--106 (START, STOP, RESUME, RESTART,
+CONFIRM\_CLEAN, FINALIZE) con detección de flanco. Así, el operador de
+planta conserva un punto de mando físico aunque el orquestador sea el
+\emph{gateway} (Fig.~\ref{fig:hmifisica}). El panel mismo, además, se
+autoría y despliega en el terminal directamente desde el \emph{gateway}
+mediante una implementación propia (obtenida por ingeniería inversa) del
+protocolo de carga del terminal (OTE), lo que elimina la dependencia de
+una estación Windows dedicada para modificar la interfaz del operador.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.62\textwidth]{foto_hmi_fisica}
+  \caption{HMI físico Harmony HMIST6400 con el panel de operador de la
+  celda desplegado desde el \emph{gateway}: botones de mando, entradas y
+  salidas digitales en vivo, estado de la cámara, contadores de producción
+  y semáforo. [Fotografía del hardware real.]}
+  \label{fig:hmifisica}
+\end{figure}
 
 \subsection{Actuación local por GPIO}
 La mesa indexadora es un disco de MDF con dos \emph{fixtures} en extremos
@@ -535,8 +562,19 @@ recuperación por RESTART con limpieza confirmada y el reinicio seguro.
 % =========================================================================
 \section{Inspección por visión}
 La cámara Datalogic P15 \cite{datalogicP15} (CMOS monocromático de
-$1280\times1024$) se integró mediante su interfaz HTTP con la secuencia
-\emph{offline} $\to$ captura PNG $\to$ \emph{online}. El algoritmo de
+$1280\times1024$), montada cenitalmente sobre el \emph{fixture} de
+inspección (Fig.~\ref{fig:camaramontada}), se integró mediante su interfaz
+HTTP con la secuencia \emph{offline} $\to$ captura PNG $\to$
+\emph{online}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.5\textwidth]{foto_camara_p15}
+  \caption{Cámara Datalogic P15 montada sobre el \emph{fixture} de
+  inspección, etiquetada con su dirección en la red industrial.
+  [Fotografía del hardware real.]}
+  \label{fig:camaramontada}
+\end{figure} El algoritmo de
 inspección, propio del proyecto, primero registra la imagen a un marco
 canónico de $436\times651$ píxeles (umbralización, componentes conexas,
 rectificación por rectángulo de área mínima, resolución del volteo de
@@ -654,6 +692,62 @@ exporta cada corrida como CSV de cuatro secciones y JSON con la analítica
 incluida.
 
 % =========================================================================
+\section{Operación y administración remotas multi-dispositivo}
+\label{sec:remoto}
+Una consecuencia central de la arquitectura gateway-céntrica es que la
+celda completa se vuelve operable desde cualquier dispositivo autorizado
+que disponga de un navegador. Al normalizar los cinco protocolos de planta
+a JSON sobre WebSocket y REST, el \emph{gateway} convierte una celda
+industrial heterogénea en un servicio web: el mismo panel ---gemelo 3D,
+HMI espejo de 19 señales, SCADA con analítica y mandos de ciclo--- se abre
+sin instalar software en una estación de ingeniería, una tableta o un
+teléfono, a través del túnel TLS de dominio estático y con control de
+acceso por roles (el rol administrador puede reconfigurar el punto de
+acceso al \emph{gateway} desde la propia interfaz; los roles de operador y
+demostración lo ven oculto), en seis idiomas y con los mandos de control
+habilitados únicamente cuando hay telemetría real (Fig.~\ref{fig:remoto}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{foto_celda_gemelo}
+  \caption{La celda física y su gemelo digital, juntos durante una
+  corrida: el cobot Lexium sobre la mesa rotatoria con su \emph{fixture} y,
+  a la derecha, la aplicación web mostrando el modelo URDF y el panel HMI
+  en vivo. [Fotografía de la celda real.]}
+  \label{fig:remoto}
+\end{figure}
+
+Bajo ese plano operativo existe un plano administrativo. Según la
+documentación de arquitectura del proyecto, el \emph{gateway} participa en
+una malla VPN de igual a igual (WireGuard/Tailscale) que no requiere abrir
+puertos entrantes, por la que el equipo accede mediante SSH para desplegar
+código, reiniciar servicios y depurar la celda sin presencia física en el
+laboratorio; incluso el panel del HMI físico se autoría y despliega
+remotamente desde el propio \emph{gateway} (Sección~\ref{sec:hmi}). En la
+práctica, esta separación en dos planos ---operación por navegador para
+usuarios, administración por VPN para ingeniería--- permitió seguir
+iterando la lógica de la celda y validando la secuencia cuando no había
+acceso continuo al hardware, como documentan las corridas grabadas
+\cite{videoplanta,videoscada}.
+
+Para los objetivos de la Industria 4.0/5.0, el valor de esta capacidad es
+doble. Operativamente aporta resiliencia y continuidad: la supervisión, el
+diagnóstico y la optimización no dependen de estar frente a la máquina, y
+un experto puede asistir una corrida desde otra red sin VPN ni
+configuración de puertos. En el plano humano ---el énfasis diferencial de
+la Industria 5.0 \cite{ec2021industry5}--- reduce la barrera de entrada al
+sistema: la interfaz multilingüe, el etiquetado explícito de la fidelidad
+de cada dato y el copiloto de mantenimiento están pensados para que
+operadores no especialistas supervisen y decidan con contexto, desde el
+dispositivo que tengan a mano. La contraparte honesta es la superficie de
+exposición que se discute más adelante: la autorización actual reside en
+el cliente y el túnel expone el backend, de modo que el modelo pleno de
+``cualquier dispositivo autorizado en la red industrial'' exige llevar la
+autenticación al backend y segmentar el acceso ---precisamente el esquema
+que la malla VPN ya aporta hoy para la administración y que el trabajo
+futuro extiende al plano operativo.
+
+% =========================================================================
 \section{Resultados y validación}
 \label{sec:resultados}
 
@@ -716,9 +810,9 @@ Fig.~\ref{fig:scadasim}, el SCADA de simulación alimentado por ella.
 
 \subsection{Corrida real y optimización del ciclo}
 La evaluación sobre el hardware, documentada en el informe técnico final
-del equipo \cite{informe2026}, procesó cuatro piezas de extremo a extremo y
-midió un tiempo de ciclo promedio de \SI{181.9}{\second} por CAFI con una
-inactividad del cobot de 80.8\,\%: el cuello de botella no era la velocidad
+del equipo \cite{informe2026}, procesó cuatro piezas de extremo a extremo
+(Fig.~\ref{fig:celdaoperacion}) y midió un tiempo de ciclo promedio de
+\SI{181.9}{\second} por CAFI con una inactividad del cobot de 80.8\,\%: el cuello de botella no era la velocidad
 del brazo sino la coordinación ---esperas por estaciones y retornos
 innecesarios a posturas seguras lejanas---, y los ciclos más largos
 coincidieron con más piezas simultáneas en proceso
@@ -760,6 +854,15 @@ actuador comandado, conforme al alcance del reto. Las corridas en video
 
 \begin{figure}[t]
   \centering
+  \includegraphics[width=\textwidth]{foto_celda_operacion}
+  \caption{La celda física durante una corrida: el cobot opera sobre la
+  mesa rotatoria de MDF con el \emph{fixture} de remachado y una pieza
+  CAFI colocada. [Fotografía de la celda real.]}
+  \label{fig:celdaoperacion}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
   \includegraphics[width=\textwidth]{captura_visor3d}
   \caption{Vista ``Celda 3D'' del gemelo digital: modelo URDF de la celda
   completa gobernado por la máquina de estados local. A la derecha, el HMI
@@ -798,10 +901,11 @@ industrial endurecido ni certificado, y la cadena de seguridad física
 \emph{gateway} solo observa los estados de paro del propio cobot---, con la
 guarda física y las paradas del robot como salvaguardas vigentes.
 
-Otras limitaciones conocidas: el túnel de dominio estático es un punto
-único de falla y deja el backend expuesto, con CORS abierto y sin
-autenticación, por lo que la única mitigación es operativa (mantener el
-túnel activo solo durante las sesiones de trabajo); la autenticación de la
+Otras limitaciones conocidas: el túnel de dominio estático que habilita la
+operación remota (Sección~\ref{sec:remoto}) es un punto único de falla y
+deja el backend expuesto, con CORS abierto y sin autenticación, por lo que
+la única mitigación es operativa (mantener el túnel activo solo durante
+las sesiones de trabajo); la autenticación de la
 aplicación web reside en el cliente;
 la interfaz Telnet de la cámara carece de autenticación de fábrica; y la
 validación de la concurrencia multi-pieza es, hasta ahora, en seco. Nada de
@@ -829,7 +933,9 @@ e inspección de interruptores CAFI con un gemelo digital web completo, un
 \emph{gateway} IIoT que orquesta cinco protocolos y un ciclo de 32 pasos,
 telemetría real a 10 Hz animando un modelo URDF en el navegador, inspección
 por visión de los cinco remaches con margen de decisión calibrado, y una
-capa SCADA 4.0 con cinco pilares de analítica y copiloto de mantenimiento.
+capa SCADA 4.0 con cinco pilares de analítica y copiloto de mantenimiento,
+todo ello operable desde cualquier dispositivo autorizado con un navegador
+y administrable por una malla VPN sin puertos expuestos.
 En hardware, la celda procesó corridas completas con un ciclo promedio de
 \SI{181.9}{\second} por pieza, y el gemelo digital permitió diseñar una
 secuencia que lo reduce a \SI{138.8}{\second} en simulación validada. El
